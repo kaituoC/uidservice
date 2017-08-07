@@ -45,7 +45,7 @@ public class RedisDao {
             jedis.hmset("specialUserMap", userMap);
             logger.info("set <" + userEntity.getUserId() + ":" + userEntity.getUserName() + "> into redis");
         } catch (Exception e) {
-            logger.error("set <" + userEntity.getUserId() + ":" + userEntity.getUserName() + "> into redis failed!");
+            logger.error("set <" + userEntity.getUserId() + ":" + userEntity.getUserName() + "> into redis failed!", e);
             return false;
         }
         return true;
