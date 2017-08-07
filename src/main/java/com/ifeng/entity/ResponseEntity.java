@@ -1,21 +1,25 @@
 package com.ifeng.entity;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by chang on 2017/8/3.
  */
 public class ResponseEntity {
-    private String msg = "ok";
-    private String state = "over";
-    private List<String> userList = new LinkedList<>();
+    private String msg = "error";
+    private int code = 1;
+    /**
+     * Map(userId, userName)
+     */
+    private Map<String, String> userMap = new HashMap<>();
+    private Set<String> userSet = new HashSet<>();
     private long timeStamp = 0l;
+
     public ResponseEntity() {
-        this.userList.add("a");
-        this.userList.add("b");
-        this.userList.add("c");
-        this.timeStamp = System.currentTimeMillis();
+//        this.userSet.add("a");
+//        this.userSet.add("b");
+//        this.userSet.add("c");
+//        this.timeStamp = System.currentTimeMillis();
     }
 
     public String getMsg() {
@@ -26,24 +30,33 @@ public class ResponseEntity {
         this.msg = msg;
     }
 
-    public String getState() {
-        return state;
+    public int getCode() {
+        return code;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setCode(int code) {
+        this.code = code;
     }
 
-    public List<String> getUserList() {
-        return userList;
+    public Map<String, String> getUserMap() {
+        return userMap;
     }
 
-    public void setUserList(List<String> userList) {
-        this.userList = userList;
+    public void setUserMap(Map<String, String> userMap) {
+        this.userMap = userMap;
+    }
+
+    public Set<String> getUserSet() {
+        return userSet;
+    }
+
+    public void setUserSet(Set<String> userSet) {
+        this.userSet = userSet;
     }
 
     /**
      * 没有get方法，则返回该类的实例的时候，实例会转化成json但是不会包含此参数
+     *
      * @return
      */
     public long getTimeStamp() {
