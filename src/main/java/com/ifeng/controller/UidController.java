@@ -1,5 +1,6 @@
 package com.ifeng.controller;
 
+import com.ifeng.dao.MysqlDao;
 import com.ifeng.entity.ResponseEntity;
 import com.ifeng.entity.UserEntity;
 import com.ifeng.service.UidService;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.Request;
 
 /**
  * Created by chang on 2017/8/3.
@@ -46,6 +48,18 @@ public class UidController {
         ue.setUserId(userEntity.getUserId());
         ue.setUserName(userEntity.getUserName());
         return uidService.addUser(ue);
+    }
+
+    @Autowired
+    MysqlDao mysqlDao;
+    @RequestMapping(value = APP_V1 + "/getRedisConf", method = RequestMethod.GET)
+    @ResponseBody
+    public String getRedisConf() {
+        String redisIp = mysqlDao.getValueFromMysql("SELECT conf_value FROM system_conf WHERE conf_name = \"redis_ip\"");
+        logger.info("redisIp=" + redisIp);
+        String redisPort = mysqlDao.getValueFromMysql("SELECT conf_value FROM system_conf WHERE conf_name = \"redis_port\"");
+        logger.info("redisPort = " + redisPort);
+        return redisIp + ":" + redisPort;
     }
 
 }
