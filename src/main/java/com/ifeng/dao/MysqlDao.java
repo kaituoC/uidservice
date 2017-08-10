@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by chang on 2017/8/8.
@@ -89,5 +91,26 @@ public class MysqlDao {
                 logger.error("connection关闭失败！");
             }
         }
+    }
+
+    public Map<String, String> getSystemConfMap() {
+        Map<String, String> map  = new ConcurrentHashMap<>();
+        boolean state = true;
+        if (this.statement == null) {
+            state = getStatement();
+            logger.info("首次获取MySQL数据库连接。");
+        }
+        if (state) {
+            try {
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM system_conf");
+                while (resultSet.next()) {
+                    map.put(resultSet.getString("conf_name"), resultSet.getString("conf_value"));
+                }
+                resultSet.close();
+            } catch (SQLException e) {
+                logger.error("执行SQL失败：SELECT * FROM system_conf", e);
+            }
+        }
+        return map;
     }
 }

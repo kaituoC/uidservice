@@ -21,6 +21,16 @@ public class UidController {
 
     private final String APP_V1 = "/baseSys/1.0";
 
+    @RequestMapping("/")
+    @ResponseBody
+    public String index() {
+        return  "/baseSys/1.0/getSpecialUid<br/>" +
+                "/baseSys/1.0/getResponseEntity<br/>" +
+                "/baseSys/1.0/checkHealth<br/>" +
+                "/baseSys/1.0/getRedisConf<br/>" +
+                "/baseSys/1.0/getRedisConf<br/>";
+    }
+
     @Autowired
     UidService uidService;
     @RequestMapping(APP_V1 + "/getSpecialUid")
@@ -36,8 +46,8 @@ public class UidController {
         return responseEntity;
     }
 
-    @RequestMapping(APP_V1 + "/checkHelth")
-    public String checkHelth() {
+    @RequestMapping(APP_V1 + "/checkHealth")
+    public String checkHealth() {
         return "ok";
     }
 
