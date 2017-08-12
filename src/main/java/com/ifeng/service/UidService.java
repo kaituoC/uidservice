@@ -1,7 +1,7 @@
 package com.ifeng.service;
 
 import com.ifeng.dao.RedisDao;
-import com.ifeng.entity.ResponseEntity;
+import com.ifeng.entity.UidServiceResponseEntity;
 import com.ifeng.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,17 +28,17 @@ public class UidService {
         return uidSet;
     }
 
-    public ResponseEntity getResponseEntity() {
-        ResponseEntity responseEntity = new ResponseEntity();
+    public UidServiceResponseEntity getResponseEntity() {
+        UidServiceResponseEntity uidServiceResponseEntity = new UidServiceResponseEntity();
         Map<String, String> userMap = redisDao.getUserMap();
         if (!userMap.isEmpty()) {
-            responseEntity.setMsg("ok");
-            responseEntity.setCode(0);
-            responseEntity.setUserMap(userMap);
-            responseEntity.setUserSet(userMap.keySet());
+            uidServiceResponseEntity.setMsg("ok");
+            uidServiceResponseEntity.setCode(0);
+            uidServiceResponseEntity.setUserMap(userMap);
+            uidServiceResponseEntity.setUserSet(userMap.keySet());
         }
-        responseEntity.setTimeStamp(System.currentTimeMillis());
-        return responseEntity;
+        uidServiceResponseEntity.setTimeStamp(System.currentTimeMillis());
+        return uidServiceResponseEntity;
     }
 
     public String addUser(UserEntity userEntity) {

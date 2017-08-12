@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Created by chang on 2017/8/3.
  */
-public class ResponseEntity {
+public class UidServiceResponseEntity {
     private String msg = "error";
     private int code = 1;
     /**
@@ -15,11 +15,7 @@ public class ResponseEntity {
     private Set<String> userSet = new HashSet<>();
     private long timeStamp = 0l;
 
-    public ResponseEntity() {
-//        this.userSet.add("a");
-//        this.userSet.add("b");
-//        this.userSet.add("c");
-//        this.timeStamp = System.currentTimeMillis();
+    public UidServiceResponseEntity() {
     }
 
     public String getMsg() {

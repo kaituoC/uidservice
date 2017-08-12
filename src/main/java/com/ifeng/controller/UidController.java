@@ -1,7 +1,7 @@
 package com.ifeng.controller;
 
 import com.ifeng.dao.MysqlDao;
-import com.ifeng.entity.ResponseEntity;
+import com.ifeng.entity.UidServiceResponseEntity;
 import com.ifeng.entity.UserEntity;
 import com.ifeng.service.UidService;
 import org.slf4j.Logger;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
-import sun.misc.Request;
 
 /**
  * Created by chang on 2017/8/3.
@@ -40,10 +39,10 @@ public class UidController {
     }
 
     @RequestMapping(APP_V1 + "/getResponseEntity")
-    public ResponseEntity getResponseEntity() {
+    public UidServiceResponseEntity getResponseEntity() {
         logger.info("enter /getResponseEntity");
-        ResponseEntity responseEntity = uidService.getResponseEntity();
-        return responseEntity;
+        UidServiceResponseEntity uidServiceResponseEntity = uidService.getResponseEntity();
+        return uidServiceResponseEntity;
     }
 
     @RequestMapping(APP_V1 + "/checkHealth")
