@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 public class WxService {
     private Logger logger = LoggerFactory.getLogger(WxService.class);
 
+    private int checkResultCode = 0;
     private String checkResultMsg = "";
 
 
@@ -57,6 +58,10 @@ public class WxService {
         if (state) {
             logger.info("prepare send message...");
             rm = messageSend(pe);
+        } else {
+            rm = new WxResponseMsg();
+            rm.setErrcode(this.checkResultCode);
+            rm.setErrmsg(this.checkResultMsg);
         }
         return rm;
     }
@@ -77,8 +82,17 @@ public class WxService {
         return responseMsg;
     }
 
+    /**
+     * 检查发送消息者是否有权限发送消息，权限检测失败则返回false
+     * @param groupId   发送消息的组id
+     * @param msgType   发送消息的类型，默认是text
+     * @param appType   发送消息的渠道（微信应用）
+     * @param sign      =MD5(groupId + msgType + appType + secret)
+     * @return
+     */
     private boolean checkPermission(int groupId, String msgType, String appType, String sign) {
         if (sign == null || sign.equals("")) {
+            this.checkResultCode = 1;
             this.checkResultMsg = "sign is null";
             logger.error("check permission failed: sign is null");
             return false;
@@ -97,14 +111,18 @@ public class WxService {
 
             // 4 把数组每一字节（一个字节占八位）换成16进制连成md5字符串
             String md5str = bytesToHex(buff);
-            if (sign.equals(md5str)) {
+            if (sign.equalsIgnoreCase(md5str)) {
+                this.checkResultCode = 0;
                 this.checkResultMsg = "check permission success!";
                 logger.info("check permission success: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType);
                 return true;
             }
+            this.checkResultCode = 3;
+            this.checkResultMsg = "sign is not right!";
             logger.error("check permission failed: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType
                     + ",input sign=" + sign + ",expect sign=" + md5str);
         } catch (NoSuchAlgorithmException e) {
+            this.checkResultCode = 2;
             this.checkResultMsg = "check permission failed!";
             logger.error("check permission failed!", e);
             return false;
