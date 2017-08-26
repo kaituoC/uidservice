@@ -1,5 +1,7 @@
 package com.ifeng.entity;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * Created by chang on 2017/8/12.
  */
@@ -11,6 +13,15 @@ public class WxResponseMsg {
     private String invalidtag;
 
     public WxResponseMsg() {
+    }
+
+    public WxResponseMsg(String wxResponseMsg) {
+        JSONObject jsonObject =JSONObject.parseObject(wxResponseMsg);
+        this.errcode = jsonObject.getInteger("errcode");
+        this.errmsg = jsonObject.getString("errmsg");
+        this.invaliduser = jsonObject.getString("invaliduser");
+        this.invalidparty = jsonObject.getString("invalidparty");
+        this.invalidtag = jsonObject.getString("invalidtag");
     }
 
     public int getErrcode() {

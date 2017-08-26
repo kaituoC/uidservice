@@ -1,6 +1,7 @@
 package com.ifeng.service;
 
 import com.ifeng.dao.MysqlDao;
+import com.ifeng.dao.RedisDao;
 import com.ifeng.entity.*;
 import com.ifeng.utils.HttpRequest;
 import org.slf4j.Logger;
@@ -24,6 +25,9 @@ public class WxService {
 
     @Autowired
     MysqlDao mysqlDao;
+
+    @Autowired
+    RedisDao redisDao;
 
     public AccessToken getAccessToken(String tokenName) {
         String secret = "";
@@ -53,13 +57,13 @@ public class WxService {
      * @return
      */
     public WxResponseMsg sendMessage(PostToMeEntity pe) {
-        WxResponseMsg rm = null;
+        WxResponseMsg rm = new WxResponseMsg();
         boolean state = checkPermission(pe.getGroupId(), pe.getMsgType(), pe.getAppType(), pe.getSign());
         if (state) {
             logger.info("prepare send message...");
             rm = messageSend(pe);
         } else {
-            rm = new WxResponseMsg();
+            logger.error("checkPermission failed!");
             rm.setErrcode(this.checkResultCode);
             rm.setErrmsg(this.checkResultMsg);
         }
@@ -72,7 +76,24 @@ public class WxService {
      * @return
      */
     private WxResponseMsg messageSend(PostToMeEntity pe) {
-        WxResponseMsg responseMsg = new WxResponseMsg();
+        PostToWxEntity postToWxEntity = new PostToWxEntity();
+        postToWxEntity.setTouser(pe.getToUser());
+        postToWxEntity.setToparty(pe.getToParty());
+        postToWxEntity.setTotag(pe.getToTag());
+        postToWxEntity.setMsgtype(pe.getMsgType());
+        postToWxEntity.setText(pe.getText());
+        //默认设置安全模式为 0 ：明文发送
+        postToWxEntity.setSafe(0);
+        //1.从 Redis 获取发送消息的 URL 地址
+        String sendMessageURLPrefix = getSendMessageURLPrefixFormRedis("sendMessageURLPrefix");
+
+        //2.从 Redis 获取 accessToken
+        String accessToken = "";
+
+        //3.发送消息体到微信服务
+        String wxResponseMsg = HttpRequest.sendPost("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + accessToken, postToWxEntity.toString());
+        logger.info("POST send over: " + wxResponseMsg);
+        WxResponseMsg responseMsg = new WxResponseMsg(wxResponseMsg);
 
         responseMsg.setErrcode(0);
         responseMsg.setErrmsg("send null");
@@ -80,6 +101,14 @@ public class WxService {
         responseMsg.setInvalidparty(pe.getToParty());
         responseMsg.setInvalidtag(pe.getToTag());
         return responseMsg;
+    }
+
+    private String getSendMessageURLPrefixFormRedis(String sendMessageURLPrefix) {
+        String prefix = redisDao.getStrValueByKey(sendMessageURLPrefix);
+        if ("".equals(prefix) || prefix == null) {
+            redisDao.setStringValueIntoRedis(getSendMessageURLPrefixFormMysql());
+        }
+        return prefix;
     }
 
     /**
