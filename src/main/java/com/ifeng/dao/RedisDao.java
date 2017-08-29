@@ -20,9 +20,22 @@ public class RedisDao {
     private final String SPECIAL_UID_KEY = "specialUid";
     private String ip = "192.168.193.130";
     private int port = 6379;
+    private Jedis jedis = null;
 
+    /**
+     * 从redis中获取某个key的值
+     * @param key 想要获取的key
+     * @return String
+     */
+    public String getStrValueByKey(String key) {
+        this.jedis = getRedisConnection();
+        return jedis.get(key);
+    }
+    public String setStringValueIntoRedis(String key, String value) {
+
+    }
     public Set<String> getUidSet() {
-        Jedis jedis = getRedisConnection();
+        this.jedis = getRedisConnection();
         Set<String> uidSet = jedis.smembers(SPECIAL_UID_KEY);
         logger.info("uidSet = " + uidSet.toString());
         jedis.close();
@@ -30,7 +43,7 @@ public class RedisDao {
     }
 
     public Map<String, String> getUserMap() {
-        Jedis jedis = getRedisConnection();
+        this.jedis = getRedisConnection();
         Map<String, String> userMap = jedis.hgetAll("specialUserMap");
         logger.info("userMap = " + userMap.toString());
         jedis.close();
@@ -39,7 +52,7 @@ public class RedisDao {
 
     public boolean addUserIntoRedisMap(UserEntity userEntity) {
         try {
-            Jedis jedis = getRedisConnection();
+            this.jedis = getRedisConnection();
             Map<String, String> userMap = new HashMap<>();
             userMap.put(userEntity.getUserId(), userEntity.getUserName());
             jedis.hmset("specialUserMap", userMap);
@@ -52,11 +65,12 @@ public class RedisDao {
     }
 
     private Jedis getRedisConnection() {
-        Jedis jedis = null;
-        try {
-            jedis = new Jedis(ip, port);
-        } catch (Exception e) {
-            System.out.println("get redis connection failed!");
+        if (this.jedis == null) {
+            try {
+                this.jedis = new Jedis(ip, port);
+            } catch (Exception e) {
+                System.out.println("get redis connection failed!");
+            }
         }
         return jedis;
     }

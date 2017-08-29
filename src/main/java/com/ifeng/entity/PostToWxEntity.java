@@ -95,4 +95,17 @@ public class PostToWxEntity {
     public void setSafe(int safe) {
         this.safe = safe;
     }
+
+    @Override
+    public String toString() {
+        return "PostToWxEntity{" +
+                "touser='" + touser + '\'' +
+                ", toparty='" + toparty + '\'' +
+                ", totag='" + totag + '\'' +
+                ", msgtype='" + msgtype + '\'' +
+                ", agentid=" + agentid +
+                ", text=" + text.toString() +
+                ", safe=" + safe +
+                '}';
+    }
 }
