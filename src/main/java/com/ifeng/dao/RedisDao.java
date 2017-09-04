@@ -102,4 +102,9 @@ public class RedisDao {
         }
         return jedis;
     }
+
+    public void setKeyExpireSecond(String key, int expireSecond) {
+        this.jedis = getRedisConnection();
+        jedis.expire(key, expireSecond);
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 /**
  * Created by chang on 2017/8/11.
@@ -88,7 +89,7 @@ public class WxService {
         String sendMessageURLPrefix = getSendMessageURLPrefixFormRedis("sendMessageURLPrefix");
 
         //2.从 Redis 获取 accessToken
-        String accessToken = "";
+        String accessToken = getAccessTokenFromRedis("monitor");
 
         //3.发送消息体到微信服务
         String wxResponseMsg = HttpRequest.sendPost("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + accessToken, postToWxEntity.toString());
@@ -103,10 +104,31 @@ public class WxService {
         return responseMsg;
     }
 
+    private String getAccessTokenFromRedis(String accessType) {
+        String accessToken = redisDao.getStrValueByKey(accessType +"AccessToken");
+        if ("".equals(accessToken) || accessToken == null) {
+            accessToken = getAccessTokenFromWxServer(accessType);
+            redisDao.setStringValueIntoRedis(accessType + "AccessToken", accessToken);
+            redisDao.setKeyExpireSecond(accessType + "AccessToken", 7200);
+        }
+        return accessToken;
+    }
+
+    private String getAccessTokenFromWxServer(String accessType) {
+        Map<String, String> confMap = mysqlDao.getSystemConfMap();
+        String getTokenUrl = confMap.get("getTokenUrl");
+        String corpId = confMap.get("CorpID");
+        String corpSecret = confMap.get(accessType + "Secret");
+        String param = "corpid=" + corpId + "&corpsecret=" + corpSecret;
+        String jsonStr = HttpRequest.sendGet(getTokenUrl, param);
+        AccessTokenJson accessTokenJson = new AccessTokenJson(jsonStr);
+        return accessTokenJson.getAccessToken();
+    }
+
     private String getSendMessageURLPrefixFormRedis(String sendMessageURLPrefix) {
         String prefix = redisDao.getStrValueByKey(sendMessageURLPrefix);
         if ("".equals(prefix) || prefix == null) {
-            redisDao.setStringValueIntoRedis(getSendMessageURLPrefixFormMysql());
+            redisDao.setStringValueIntoRedis("sendMessageURLPrefix", getSendMessageURLPrefixFormMysql());
         }
         return prefix;
     }
@@ -125,38 +147,42 @@ public class WxService {
             this.checkResultMsg = "sign is null";
             logger.error("check permission failed: sign is null");
             return false;
-        }
-        String secret = mysqlDao.getValueFromMysql("SELECT conf_value FROM system_conf WHERE conf_name = \"group1secret\"");
-        try {
-            // 1 创建一个提供信息摘要算法的对象，初始化为md5算法对象
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            String inputStr = groupId + msgType + appType;
+        } else {
+            sign = sign.toUpperCase();
+            String secret = mysqlDao.getValueFromMysql("SELECT conf_value FROM system_conf WHERE conf_name = \"group1secret\"");
+            try {
+                // 1 创建一个提供信息摘要算法的对象，初始化为md5算法对象
+                MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+                String inputStr = groupId + msgType + appType + secret;
 
-            // 2 将消息变成byte数组
-            byte[] input = inputStr.getBytes();
+                // 2 将消息变成byte数组
+                byte[] input = inputStr.getBytes();
 
-            // 3 计算后获得字节数组,这就是那128位了
-            byte[] buff = messageDigest.digest(input);
+                // 3 计算后获得字节数组,这就是那128位了
+                byte[] buff = messageDigest.digest(input);
 
-            // 4 把数组每一字节（一个字节占八位）换成16进制连成md5字符串
-            String md5str = bytesToHex(buff);
-            if (sign.equalsIgnoreCase(md5str)) {
-                this.checkResultCode = 0;
-                this.checkResultMsg = "check permission success!";
-                logger.info("check permission success: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType);
-                return true;
+                // 4 把数组每一字节（一个字节占八位）换成16进制连成md5字符串
+                String md5str = bytesToHex(buff);
+                logger.info("sign=[" + sign + "]; md5str=[" + md5str + "]");
+                if (sign.equalsIgnoreCase(md5str)) {
+                    this.checkResultCode = 0;
+                    this.checkResultMsg = "check permission success!";
+                    logger.info("check permission success: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType);
+                    return true;
+                } else {
+                    this.checkResultCode = 3;
+                    this.checkResultMsg = "sign is not right!";
+                    logger.error("check permission failed: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType
+                            + ",input sign=" + sign + ",expect sign=" + md5str);
+                    return false;
+                }
+            } catch (NoSuchAlgorithmException e) {
+                this.checkResultCode = 2;
+                this.checkResultMsg = "check permission failed!";
+                logger.error("check permission failed!", e);
+                return false;
             }
-            this.checkResultCode = 3;
-            this.checkResultMsg = "sign is not right!";
-            logger.error("check permission failed: groupId=" + groupId + ",msgType=" + msgType + ",appType=" + appType
-                    + ",input sign=" + sign + ",expect sign=" + md5str);
-        } catch (NoSuchAlgorithmException e) {
-            this.checkResultCode = 2;
-            this.checkResultMsg = "check permission failed!";
-            logger.error("check permission failed!", e);
-            return false;
         }
-        return false;
     }
 
     /**
@@ -181,5 +207,10 @@ public class WxService {
             md5str.append(Integer.toHexString(digital));
         }
         return md5str.toString().toUpperCase();
+    }
+
+    public String getSendMessageURLPrefixFormMysql() {
+        String sendMessageURLPrefix = mysqlDao.getValueFromMysql("SELECT conf_value FROM system_conf WHERE conf_name = \"sendMessageURLPrefix\"");
+        return sendMessageURLPrefix;
     }
 }
