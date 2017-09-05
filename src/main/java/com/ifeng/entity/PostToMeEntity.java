@@ -106,4 +106,18 @@ public class PostToMeEntity {
     public void setSign(String sign) {
         this.sign = sign;
     }
+
+    @Override
+    public String toString() {
+        return "PostToMeEntity{" +
+                "groupId=" + groupId +
+                ", toUser='" + toUser + '\'' +
+                ", toParty='" + toParty + '\'' +
+                ", toTag='" + toTag + '\'' +
+                ", msgType='" + msgType + '\'' +
+                ", appType='" + appType + '\'' +
+                ", text=" + text +
+                ", sign='" + sign + '\'' +
+                '}';
+    }
 }

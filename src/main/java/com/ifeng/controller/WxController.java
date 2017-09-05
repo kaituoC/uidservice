@@ -39,6 +39,7 @@ public class WxController {
     @RequestMapping(value = APP_V1 + "/sendMessage", method = RequestMethod.POST)
     @ResponseBody
     public WxResponseMsg sendMessage(@RequestBody PostToMeEntity postToMeEntity) {
+        logger.info("receive a request:" + postToMeEntity);
         WxResponseMsg responseEntity = wxService.sendMessage(postToMeEntity);
         return responseEntity;
     }

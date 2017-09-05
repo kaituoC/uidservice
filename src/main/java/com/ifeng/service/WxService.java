@@ -54,6 +54,7 @@ public class WxService {
     /**
      * 发送消息到微信服务
      * 如果部分接收人无权限或不存在，发送仍然执行，但会返回无效的部分
+     *
      * @param pe
      * @return
      */
@@ -73,16 +74,13 @@ public class WxService {
 
     /**
      * 调用微信服务发送消息
+     *
      * @param pe
      * @return
      */
     private WxResponseMsg messageSend(PostToMeEntity pe) {
-        PostToWxEntity postToWxEntity = new PostToWxEntity();
-        postToWxEntity.setTouser(pe.getToUser());
-        postToWxEntity.setToparty(pe.getToParty());
-        postToWxEntity.setTotag(pe.getToTag());
-        postToWxEntity.setMsgtype(pe.getMsgType());
-        postToWxEntity.setText(pe.getText());
+        PostToWxEntity postToWxEntity = new PostToWxEntity(pe);
+        logger.info("PostToWxEntity is:" + postToWxEntity);
         //默认设置安全模式为 0 ：明文发送
         postToWxEntity.setSafe(0);
         //1.从 Redis 获取发送消息的 URL 地址
@@ -90,7 +88,7 @@ public class WxService {
 
         //2.从 Redis 获取 accessToken
         String accessToken = getAccessTokenFromRedis("monitor");
-
+        logger.info("accessToken=" + accessToken);
         //3.发送消息体到微信服务
         String wxResponseMsg = HttpRequest.sendPost("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + accessToken, postToWxEntity.toString());
         logger.info("POST send over: " + wxResponseMsg);
@@ -105,7 +103,7 @@ public class WxService {
     }
 
     private String getAccessTokenFromRedis(String accessType) {
-        String accessToken = redisDao.getStrValueByKey(accessType +"AccessToken");
+        String accessToken = redisDao.getStrValueByKey(accessType + "AccessToken");
         if ("".equals(accessToken) || accessToken == null) {
             accessToken = getAccessTokenFromWxServer(accessType);
             redisDao.setStringValueIntoRedis(accessType + "AccessToken", accessToken);
@@ -135,10 +133,11 @@ public class WxService {
 
     /**
      * 检查发送消息者是否有权限发送消息，权限检测失败则返回false
-     * @param groupId   发送消息的组id
-     * @param msgType   发送消息的类型，默认是text
-     * @param appType   发送消息的渠道（微信应用）
-     * @param sign      =MD5(groupId + msgType + appType + secret)
+     *
+     * @param groupId 发送消息的组id
+     * @param msgType 发送消息的类型，默认是text
+     * @param appType 发送消息的渠道（微信应用）
+     * @param sign    =MD5(groupId + msgType + appType + secret)
      * @return
      */
     private boolean checkPermission(int groupId, String msgType, String appType, String sign) {

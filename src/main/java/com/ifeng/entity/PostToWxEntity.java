@@ -40,6 +40,19 @@ public class PostToWxEntity {
     public PostToWxEntity() {
     }
 
+    public PostToWxEntity(PostToMeEntity pe) {
+        this.touser = pe.getToUser();
+        this.toparty = pe.getToParty();
+        this.totag = pe.getToTag();
+        this.msgtype = pe.getMsgType();
+        this.text = pe.getText();
+//        postToWxEntity.setTouser(pe.getToUser());
+//        postToWxEntity.setToparty(pe.getToParty());
+//        postToWxEntity.setTotag(pe.getToTag());
+//        postToWxEntity.setMsgtype(pe.getMsgType());
+//        postToWxEntity.setText(pe.getText());
+    }
+
     public String getTouser() {
         return touser;
     }
@@ -98,14 +111,14 @@ public class PostToWxEntity {
 
     @Override
     public String toString() {
-        return "PostToWxEntity{" +
-                "touser='" + touser + '\'' +
-                ", toparty='" + toparty + '\'' +
-                ", totag='" + totag + '\'' +
-                ", msgtype='" + msgtype + '\'' +
-                ", agentid=" + agentid +
-                ", text=" + text.toString() +
-                ", safe=" + safe +
-                '}';
+        return "{" +
+                "\"touser\":\"" + touser + "\"" +
+                ", \"toparty\":\"" + toparty + "\"" +
+                ", \"totag\":\"" + totag + "\"" +
+                ", \"msgtype\":\"" + msgtype + "\"" +
+                ", \"agentid\":" + agentid +
+                ", \"text\":{\"content\":\"" + text.get("content") + "\"}" +
+                ", \"safe\":" + safe +
+                "}";
     }
 }
