@@ -80,6 +80,7 @@ public class WxService {
      */
     private WxResponseMsg messageSend(PostToMeEntity pe) {
         PostToWxEntity postToWxEntity = new PostToWxEntity(pe);
+        postToWxEntity.setAgentid(Integer.parseInt(mysqlDao.getSystemConfMap().get(pe.getAppType() + "AgentId")));
         logger.info("PostToWxEntity is:" + postToWxEntity);
         //默认设置安全模式为 0 ：明文发送
         postToWxEntity.setSafe(0);
@@ -94,11 +95,11 @@ public class WxService {
         logger.info("POST send over: " + wxResponseMsg);
         WxResponseMsg responseMsg = new WxResponseMsg(wxResponseMsg);
 
-        responseMsg.setErrcode(0);
-        responseMsg.setErrmsg("send null");
-        responseMsg.setInvaliduser(pe.getToUser());
-        responseMsg.setInvalidparty(pe.getToParty());
-        responseMsg.setInvalidtag(pe.getToTag());
+//        responseMsg.setErrcode(0);
+//        responseMsg.setErrmsg("send null");
+//        responseMsg.setInvaliduser(pe.getToUser());
+//        responseMsg.setInvalidparty(pe.getToParty());
+//        responseMsg.setInvalidtag(pe.getToTag());
         return responseMsg;
     }
 

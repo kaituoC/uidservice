@@ -16,12 +16,33 @@ public class WxResponseMsg {
     }
 
     public WxResponseMsg(String wxResponseMsg) {
-        JSONObject jsonObject =JSONObject.parseObject(wxResponseMsg);
+        init(wxResponseMsg);
+    }
+
+    private void init(String wxResponseMsg) {
+        JSONObject jsonObject = JSONObject.parseObject(wxResponseMsg);
+        String tmp;
         this.errcode = jsonObject.getInteger("errcode");
         this.errmsg = jsonObject.getString("errmsg");
-        this.invaliduser = jsonObject.getString("invaliduser");
-        this.invalidparty = jsonObject.getString("invalidparty");
-        this.invalidtag = jsonObject.getString("invalidtag");
+        tmp = jsonObject.getString("invaliduser");
+        if (tmp == null) {
+            this.invaliduser = "";
+        } else {
+            this.invaliduser = tmp;
+        }
+        tmp = jsonObject.getString("invalidparty");
+        if (tmp == null) {
+            this.invalidparty = "";
+        } else {
+            this.invalidparty = tmp;
+        }
+        tmp = jsonObject.getString("invalidtag");
+        if (tmp == null) {
+            this.invalidtag = "";
+        } else {
+            this.invalidtag = tmp;
+        }
+
     }
 
     public int getErrcode() {
