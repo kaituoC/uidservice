@@ -36,6 +36,12 @@ public class WxController {
         return wxService.toString() + "---" + System.currentTimeMillis();
     }
 
+    /**
+     * 发送微信的命令
+     * curl -l -H "Content-type: application/json" -X POST -d '{"groupId":1,"toUser":"ChangKaiTuo","toParty":"","toTag":"","msgType":"text","appType":"monitor","text":{"content":"this is a test message by changkaituo"},"sign":"a50ea7c63c146ec40a838ab81f8193b2"}' http://192.168.193.1:8080/baseSys/1.0/sendMessage
+     * @param postToMeEntity
+     * @return
+     */
     @RequestMapping(value = APP_V1 + "/sendMessage", method = RequestMethod.POST)
     @ResponseBody
     public WxResponseMsg sendMessage(@RequestBody PostToMeEntity postToMeEntity) {
